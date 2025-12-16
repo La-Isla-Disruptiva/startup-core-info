@@ -179,6 +179,9 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 [[package]]
 name = "core"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "core-foundation-sys"
@@ -379,7 +382,6 @@ checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 name = "sqlite_adapter"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "core",
  "rusqlite",
 ]

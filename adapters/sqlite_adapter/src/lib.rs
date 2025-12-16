@@ -1,6 +1,6 @@
 use core::domain::ExtractedRecord;
 use core::ports::{DataRepository, Result};
-use chrono::{DateTime, Local, NaiveDateTime};
+use core::utils::format_timestamp_to_local;
 use rusqlite::{Connection, Row};
 
 /// SQLite implementation of the DataRepository trait
@@ -12,40 +12,6 @@ impl SqliteDataRepository {
     /// Creates a new SqliteDataRepository with the given database path
     pub fn new(db_path: String) -> Self {
         Self { db_path }
-    }
-
-    /// Parses a timestamp string and converts it to local timezone
-    /// Supports various formats: ISO 8601, SQLite datetime, etc.
-    fn format_timestamp_to_local(&self, timestamp_str: &str) -> String {
-        if timestamp_str.is_empty() {
-            return String::new();
-        }
-
-        // Try parsing as ISO 8601 with timezone (e.g., "2025-12-16T10:30:00Z" or "2025-12-16T10:30:00+00:00")
-        if let Ok(dt) = DateTime::parse_from_rfc3339(timestamp_str) {
-            return dt.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S %Z").to_string();
-        }
-
-        // Try parsing as ISO 8601 without timezone (assume UTC)
-        if let Ok(naive_dt) = NaiveDateTime::parse_from_str(timestamp_str, "%Y-%m-%dT%H:%M:%S") {
-            let utc_dt = naive_dt.and_utc();
-            return utc_dt.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S %Z").to_string();
-        }
-
-        // Try parsing as SQLite datetime format (e.g., "2025-12-16 10:30:00")
-        if let Ok(naive_dt) = NaiveDateTime::parse_from_str(timestamp_str, "%Y-%m-%d %H:%M:%S") {
-            let utc_dt = naive_dt.and_utc();
-            return utc_dt.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S %Z").to_string();
-        }
-
-        // Try parsing as date only (e.g., "2025-12-16") - treat as midnight UTC
-        if let Ok(naive_dt) = NaiveDateTime::parse_from_str(timestamp_str, "%Y-%m-%d") {
-            let utc_dt = naive_dt.and_utc();
-            return utc_dt.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S %Z").to_string();
-        }
-
-        // If parsing fails, return the original string
-        timestamp_str.to_string()
     }
 }
 
@@ -74,7 +40,7 @@ impl DataRepository for SqliteDataRepository {
         let records = stmt
             .query_map([], |row: &Row| {
                 let raw_timestamp: String = row.get(2)?;
-                let formatted_timestamp = self.format_timestamp_to_local(&raw_timestamp);
+                let formatted_timestamp = format_timestamp_to_local(&raw_timestamp);
                 
                 Ok(ExtractedRecord {
                     channel_name: row.get(0)?,

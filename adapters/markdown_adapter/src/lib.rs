@@ -1,5 +1,6 @@
 use core::domain::ExtractedRecord;
 use core::ports::{MarkdownWriter, Result};
+use core::utils::{extract_year_month, sanitize_filename};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -12,41 +13,6 @@ pub struct MarkdownWriterAdapter {
 impl MarkdownWriterAdapter {
     pub fn new(output_folder: String) -> Self {
         Self { output_folder }
-    }
-
-    /// Extracts year-month (YYYY-MM) from a timestamp string
-    /// Supports formats like: "2025-12-16 10:30:00 PST", "2025-12-16T10:30:00", etc.
-    fn extract_year_month(&self, timestamp: &str) -> Option<String> {
-        // Try to parse common timestamp formats
-        // Look for YYYY-MM pattern at the start (works with both "2025-12-16 10:30:00" and "2025-12-16T10:30:00")
-        if timestamp.len() >= 7 {
-            let prefix = &timestamp[..7];
-            if prefix.matches('-').count() == 1 {
-                // Check if it matches YYYY-MM pattern
-                let parts: Vec<&str> = prefix.split('-').collect();
-                if parts.len() == 2 && parts[0].len() == 4 && parts[1].len() == 2 {
-                    if parts[0].chars().all(|c| c.is_ascii_digit())
-                        && parts[1].chars().all(|c| c.is_ascii_digit())
-                    {
-                        return Some(prefix.to_string());
-                    }
-                }
-            }
-        }
-        None
-    }
-
-    /// Sanitizes a channel name for use in a filename
-    fn sanitize_filename(&self, name: &str) -> String {
-        name.chars()
-            .map(|c| match c {
-                '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '-',
-                c if c.is_control() => '-',
-                c => c,
-            })
-            .collect::<String>()
-            .trim()
-            .to_string()
     }
 
     /// Formats records into markdown for a single channel-month group
@@ -98,8 +64,7 @@ impl MarkdownWriter for MarkdownWriterAdapter {
         
         for record in records {
             // Extract year-month from timestamp, default to "unknown" if parsing fails
-            let year_month = self
-                .extract_year_month(&record.timestamp)
+            let year_month = extract_year_month(&record.timestamp)
                 .unwrap_or_else(|| "unknown".to_string());
             
             let key = (record.channel_name.clone(), year_month);
@@ -108,7 +73,7 @@ impl MarkdownWriter for MarkdownWriterAdapter {
 
         // Write a separate file for each channel-month combination
         for ((channel_name, year_month), channel_records) in grouped.iter() {
-            let sanitized_channel = self.sanitize_filename(channel_name);
+            let sanitized_channel = sanitize_filename(channel_name);
             let filename = format!("{}-{}.md", sanitized_channel, year_month);
             let file_path = output_dir.join(&filename);
 
