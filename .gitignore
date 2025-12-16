@@ -1,0 +1,11 @@
+*.db
+
+# Rust / Cargo
+target/
+**/target/
+**/*.rs.bk
+
+# IDE / tooling (optional, but common)
+.vscode/
+.idea/
+*.swp
