@@ -1,6 +1,5 @@
 use clap::Parser;
-use core::application::MarkdownWriter;
-use core::ports::DataRepository;
+use core::ports::{DataRepository, MarkdownWriter};
 use sqlite_adapter::SqliteDataRepository;
 use markdown_adapter::MarkdownWriterAdapter;
 

@@ -1,6 +1,5 @@
-use core::application::MarkdownWriter;
 use core::domain::ExtractedRecord;
-use core::ports::Result;
+use core::ports::{MarkdownWriter, Result};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;

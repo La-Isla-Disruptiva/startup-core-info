@@ -1,15 +1,9 @@
-use crate::domain::ExtractedRecord;
-use crate::ports::{DataRepository, Result};
+use crate::ports::{DataRepository, MarkdownWriter, Result};
 
 /// Application service for extracting and formatting Discord messages
 pub struct ExtractionServiceImpl {
     data_repository: Box<dyn DataRepository>,
     markdown_writer: Box<dyn MarkdownWriter>,
-}
-
-/// Trait for writing markdown content
-pub trait MarkdownWriter: Send + Sync {
-    fn write(&self, records: &[ExtractedRecord]) -> Result<()>;
 }
 
 impl ExtractionServiceImpl {

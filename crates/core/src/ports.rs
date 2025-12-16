@@ -8,3 +8,9 @@ pub trait DataRepository {
     fn fetch_all_records(&self) -> Result<Vec<ExtractedRecord>>;
 }
 
+/// Trait for writing markdown content
+/// This is a port (interface) that defines how the core communicates with output adapters
+pub trait MarkdownWriter: Send + Sync {
+    fn write(&self, records: &[ExtractedRecord]) -> Result<()>;
+}
+
