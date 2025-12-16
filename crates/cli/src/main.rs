@@ -13,9 +13,9 @@ struct Cli {
     #[arg(short = 'i', long = "input-db", required = true)]
     input_db: String,
 
-    /// Path where the final Markdown file will be written
-    #[arg(short = 'o', long = "output-file", required = true)]
-    output_file: String,
+    /// Path to the output folder where Markdown files will be written
+    #[arg(short = 'o', long = "output-folder", required = true)]
+    output_folder: String,
 }
 
 fn main() {
@@ -27,7 +27,7 @@ fn main() {
     );
     
     let markdown_writer: Box<dyn MarkdownWriter> = Box::new(
-        MarkdownWriterAdapter::new(cli.output_file.clone())
+        MarkdownWriterAdapter::new(cli.output_folder.clone())
     );
 
     // Instantiate the core business service with dependency injection
@@ -39,7 +39,7 @@ fn main() {
     // Execute the primary port method
     match service.execute_extraction() {
         Ok(_) => {
-            println!("Successfully extracted messages to {}", cli.output_file);
+            println!("Successfully extracted messages to {}", cli.output_folder);
         }
         Err(e) => {
             eprintln!("Error during extraction: {}", e);
