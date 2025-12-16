@@ -15,10 +15,10 @@ impl MarkdownWriterAdapter {
     }
 
     /// Extracts year-month (YYYY-MM) from a timestamp string
-    /// Supports formats like: "2025-12-16 10:30:00", "2025-12-16T10:30:00", etc.
+    /// Supports formats like: "2025-12-16 10:30:00 PST", "2025-12-16T10:30:00", etc.
     fn extract_year_month(&self, timestamp: &str) -> Option<String> {
         // Try to parse common timestamp formats
-        // Look for YYYY-MM pattern at the start
+        // Look for YYYY-MM pattern at the start (works with both "2025-12-16 10:30:00" and "2025-12-16T10:30:00")
         if timestamp.len() >= 7 {
             let prefix = &timestamp[..7];
             if prefix.matches('-').count() == 1 {
