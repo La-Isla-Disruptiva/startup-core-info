@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Crawler</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 350px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #2f3136;
+      color: #dcddde;
+      position: relative;
+      min-height: 500px;
+      max-height: 600px;
+      overflow: hidden;
+    }
+    
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+    
+    .status {
+      background: #202225;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .stat-label {
+      color: #b9bbbe;
+    }
+    
+    .stat-value {
+      color: #ffffff;
+      font-weight: 500;
+    }
+    
+    .channel-name {
+      color: #7289da;
+      font-weight: 600;
+    }
+    
+    .collapsible-header {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #40444b;
+    }
+    
+    .collapsible-header:hover {
+      opacity: 0.8;
+    }
+    
+    .collapsible-content {
+      margin-top: 8px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #7289da;
+      color: #ffffff;
+    }
+    
+    .btn-primary:hover {
+      background: #677bc4;
+    }
+    
+    .btn-primary:disabled {
+      background: #4f545c;
+      color: #72767d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .btn-danger {
+      background: #f04747;
+      color: #ffffff;
+    }
+    
+    .btn-danger:hover {
+      background: #d84040;
+    }
+    
+    .btn-danger:disabled {
+      background: #4f545c;
+      color: #72767d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .btn-secondary {
+      background: #4f545c;
+      color: #ffffff;
+    }
+    
+    .btn-secondary:hover {
+      background: #5d6269;
+    }
+    
+    .btn-secondary:disabled {
+      background: #36393f;
+      color: #72767d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    button:disabled {
+      background: #4f545c !important;
+      color: #72767d !important;
+      cursor: not-allowed !important;
+      opacity: 0.6 !important;
+    }
+    
+    .info {
+      background: #202225;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #b9bbbe;
+      line-height: 1.5;
+      margin-top: 15px;
+    }
+    
+    .info strong {
+      color: #ffffff;
+    }
+    
+    .crawling {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #202225;
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 300px;
+      animation: slideIn 0.3s ease-out;
+      border-left: 4px solid #7289da;
+    }
+    
+    .toast.error {
+      border-left-color: #f04747;
+    }
+    
+    .toast.success {
+      border-left-color: #43b581;
+    }
+    
+    .toast.warning {
+      border-left-color: #faa61a;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #4f545c;
+      border-top-color: #7289da;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .button-loading {
+      position: relative;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    
+    .button-loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 50%;
+      left: 50%;
+      margin-left: -8px;
+      margin-top: -8px;
+      border: 2px solid #ffffff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .data-viewer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #2f3136;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      margin: -20px;
+      padding: 0;
+    }
+    
+    .data-viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #202225;
+      border-bottom: 1px solid #40444b;
+      min-height: 60px;
+    }
+    
+    .data-viewer-header h2 {
+      font-size: 18px;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      line-height: 1;
+    }
+    
+    .btn-close {
+      background: transparent;
+      border: none;
+      color: #b9bbbe;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      max-width: 30px;
+      flex-shrink: 0;
+      flex-grow: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    
+    .btn-close:hover {
+      background: #40444b;
+      color: #ffffff;
+    }
+    
+    .data-tabs {
+      display: flex;
+      background: #202225;
+      border-bottom: 1px solid #40444b;
+      overflow-x: auto;
+    }
+    
+    .data-tab {
+      flex: 1;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: #b9bbbe;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    
+    .data-tab:hover {
+      background: #2f3136;
+      color: #ffffff;
+    }
+    
+    .data-tab.active {
+      color: #7289da;
+      border-bottom-color: #7289da;
+      background: #2f3136;
+    }
+    
+    .data-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      background: #36393f;
+    }
+    
+    .data-panel {
+      display: none;
+    }
+    
+    .data-panel.active {
+      display: block;
+    }
+    
+    .data-loading {
+      text-align: center;
+      color: #b9bbbe;
+      padding: 20px;
+    }
+    
+    .data-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .data-item {
+      background: #2f3136;
+      border: 1px solid #40444b;
+      border-radius: 6px;
+      padding: 12px;
+      transition: all 0.2s;
+    }
+    
+    .data-item:hover {
+      border-color: #7289da;
+      background: #36393f;
+    }
+    
+    .data-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .data-item-title {
+      font-weight: 600;
+      color: #7289da;
+      font-size: 14px;
+    }
+    
+    .data-item-id {
+      font-size: 11px;
+      color: #72767d;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .data-item-field {
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    
+    .data-item-label {
+      color: #b9bbbe;
+      font-weight: 500;
+      display: inline-block;
+      min-width: 80px;
+    }
+    
+    .data-item-value {
+      color: #ffffff;
+    }
+    
+    .data-item-value.empty {
+      color: #72767d;
+      font-style: italic;
+    }
+    
+    .message-content {
+      background: #202225;
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      max-height: 100px;
+      overflow-y: auto;
+      word-break: break-word;
+    }
+    
+    .data-stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #40444b;
+    }
+    
+    .data-stat {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background: #2f3136;
+      border-radius: 6px;
+    }
+    
+    .data-stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #7289da;
+    }
+    
+    .data-stat-label {
+      font-size: 11px;
+      color: #b9bbbe;
+      margin-top: 4px;
+    }
+    
+    .messages-filter {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #40444b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .filter-label {
+      font-size: 12px;
+      color: #b9bbbe;
+      font-weight: 500;
+    }
+    
+    .filter-select {
+      flex: 1;
+      padding: 8px 12px;
+      background: #2f3136;
+      border: 1px solid #40444b;
+      border-radius: 4px;
+      color: #dcddde;
+      font-size: 12px;
+      cursor: pointer;
+      outline: none;
+    }
+    
+    .filter-select:hover {
+      border-color: #7289da;
+    }
+    
+    .filter-select:focus {
+      border-color: #7289da;
+      box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+    }
+    
+    .channel-link {
+      color: #7289da;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    
+    .channel-link:hover {
+      background: rgba(114, 137, 218, 0.1);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Discord Channel Crawler</h1>
+  
+  <div class="status" id="status">
+    <div class="stat-item">
+      <span class="stat-label">Status:</span>
+      <span class="stat-value" id="statusText">Loading...</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Channel:</span>
+      <span class="stat-value channel-name" id="channelName">-</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Messages Crawled:</span>
+      <span class="stat-value" id="messageCount">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Last Crawled:</span>
+      <span class="stat-value" id="lastCrawled">-</span>
+    </div>
+    <div class="stat-item collapsible-header" id="dbStatsHeader" style="cursor: pointer; user-select: none;">
+      <span class="stat-label">Database Stats</span>
+      <span class="stat-value" id="dbStatsToggle">▼</span>
+    </div>
+    <div class="collapsible-content" id="dbStatsContent" style="display: none;">
+      <div class="stat-item" style="padding-left: 20px;">
+        <span class="stat-label">Total in DB:</span>
+        <span class="stat-value" id="totalMessages">0</span>
+      </div>
+      <div class="stat-item" style="padding-left: 20px;">
+        <span class="stat-label">Channels:</span>
+        <span class="stat-value" id="channelCount">0</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button id="startBtn" class="btn-primary">Start Crawl</button>
+    <button id="stopBtn" class="btn-danger" disabled>Stop</button>
+  </div>
+  
+  <div class="controls">
+    <button id="exportBtn" class="btn-secondary">Export DB</button>
+    <button id="clearBtn" class="btn-secondary">Clear DB</button>
+    <button id="viewDataBtn" class="btn-secondary">View Data</button>
+  </div>
+  
+  <div class="info">
+    <strong>Instructions:</strong><br>
+    1. Navigate to a Discord channel<br>
+    2. Click "Start Crawl" to begin<br>
+    3. The extension will scroll and collect messages<br>
+    4. Click "Export DB" to download the SQLite file
+  </div>
+  
+  <!-- Data Viewer -->
+  <div class="data-viewer" id="dataViewer" style="display: none;">
+    <div class="data-viewer-header">
+      <h2>Data Viewer</h2>
+      <button id="closeViewerBtn" class="btn-close">×</button>
+    </div>
+    
+    <div class="data-tabs">
+      <button class="data-tab active" data-tab="servers">Servers</button>
+      <button class="data-tab" data-tab="channels">Channels</button>
+      <button class="data-tab" data-tab="users">Users</button>
+      <button class="data-tab" data-tab="messages">Messages</button>
+    </div>
+    
+    <div class="data-content">
+      <div class="data-panel active" id="serversPanel">
+        <div class="data-loading">Loading servers...</div>
+        <div class="data-list" id="serversList"></div>
+      </div>
+      
+      <div class="data-panel" id="channelsPanel">
+        <div class="data-loading">Loading channels...</div>
+        <div class="data-list" id="channelsList"></div>
+      </div>
+      
+      <div class="data-panel" id="usersPanel">
+        <div class="data-loading">Loading users...</div>
+        <div class="data-list" id="usersList"></div>
+      </div>
+      
+      <div class="data-panel" id="messagesPanel">
+        <div class="data-loading">Loading messages...</div>
+        <div class="messages-filter">
+          <label for="channelFilter" class="filter-label">Filter by Channel:</label>
+          <select id="channelFilter" class="filter-select">
+            <option value="">All Channels</option>
+          </select>
+        </div>
+        <div class="data-list" id="messagesList"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast notifications -->
+  <div id="toastContainer"></div>
+  
+  <script src="sql-wasm.js"></script>
+  <script src="database.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
+

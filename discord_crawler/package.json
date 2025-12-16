@@ -1,0 +1,22 @@
+{
+  "name": "discord-crawler",
+  "version": "1.0.0",
+  "description": "Chrome extension to crawl Discord channel messages into SQLite",
+  "scripts": {
+    "download-sqljs": "chmod +x download-sqljs.sh && ./download-sqljs.sh",
+    "lint": "eslint *.js",
+    "lint:fix": "eslint *.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "keywords": [
+    "discord",
+    "crawler",
+    "chrome-extension",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
