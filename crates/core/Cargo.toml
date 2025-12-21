@@ -1,0 +1,13 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono = "0.4"
+dateparser = "0.1"
+

@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "crates/core",
+    "crates/cli",
+    "adapters/sqlite_adapter",
+    "adapters/markdown_adapter",
+]
+resolver = "2"
+
