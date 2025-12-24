@@ -526,7 +526,7 @@
          * Based on Discord's structure: messagesWrapper > scroller (scrollable) > scrollerContent > ol[data-list-id="chat-messages"]
          */
     findScrollContainer() {
-      const scroller = document.querySelector('div[class*="scroller_"][class*="managedReactiveScroller_"]');
+      const scroller = document.querySelector('div[class*="scroller"][class*="managedReactiveScroller"]');
       if (scroller) {
         return scroller;
       }
